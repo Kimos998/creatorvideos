@@ -1,654 +1,75 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>إنشاء فيديو</title>
-    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <title>Text to Speech with Gemini API</title>
     <style>
-        :root {
-            --primary-color: #2563eb;
-            --primary-hover: #1d4ed8;
-            --secondary-color: #64748b;
-            --background-color: #f8fafc;
-            --card-background: #ffffff;
-            --text-color: #1e293b;
-            --border-color: #e2e8f0;
-            --success-color: #22c55e;
-            --error-color: #ef4444;
-            --warning-color: #f59e0b;
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Tajawal', sans-serif;
-            background-color: var(--background-color);
-            color: var(--text-color);
-            line-height: 1.6;
-        }
-
-        .container {
-            max-width: 800px;
-            margin: 2rem auto;
-            padding: 0 1rem;
-        }
-
-        .card {
-            background-color: var(--card-background);
-            border-radius: 1rem;
-            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-            padding: 2rem;
-            margin-bottom: 2rem;
-        }
-
-        h1 {
-            color: var(--text-color);
-            text-align: center;
-            font-size: 2rem;
-            margin-bottom: 2rem;
-            font-weight: 700;
-        }
-
-        .form-group {
-            margin-bottom: 1.5rem;
-        }
-
-        label {
-            display: block;
-            margin-bottom: 0.5rem;
-            color: var(--secondary-color);
-            font-weight: 500;
-        }
-
-        input[type="text"] {
-            width: 100%;
-            padding: 0.75rem 1rem;
-            border: 2px solid var(--border-color);
-            border-radius: 0.5rem;
-            font-size: 1rem;
-            font-family: 'Tajawal', sans-serif;
-            transition: border-color 0.2s ease;
-        }
-
-        input[type="text"]:focus {
-            outline: none;
-            border-color: var(--primary-color);
-        }
-
-        .language-buttons {
-            display: flex;
-            gap: 1rem;
-            margin-bottom: 1.5rem;
-        }
-
-        .language-btn {
-            flex: 1;
-            padding: 0.75rem;
-            border: 2px solid var(--border-color);
-            border-radius: 0.5rem;
-            background: transparent;
-            color: var(--secondary-color);
-            cursor: pointer;
-            transition: all 0.2s ease;
-            font-family: 'Tajawal', sans-serif;
-        }
-
-        .language-btn.active {
-            background-color: var(--primary-color);
-            color: white;
-            border-color: var(--primary-color);
-        }
-
-        .language-btn:hover:not(.active) {
-            border-color: var(--primary-color);
-            color: var(--primary-color);
-        }
-
-        .btn {
-            width: 100%;
-            padding: 0.75rem 1.5rem;
-            border: none;
-            border-radius: 0.5rem;
-            background-color: var(--primary-color);
-            color: white;
-            font-size: 1rem;
-            font-weight: 500;
-            cursor: pointer;
-            transition: background-color 0.2s ease;
-            font-family: 'Tajawal', sans-serif;
-        }
-
-        .btn:hover:not(:disabled) {
-            background-color: var(--primary-hover);
-        }
-
-        .btn:disabled {
-            opacity: 0.7;
-            cursor: not-allowed;
-        }
-
-        #loading {
-            text-align: center;
-            color: var(--secondary-color);
-            margin: 1rem 0;
-        }
-
-        .message {
-            padding: 1rem;
-            border-radius: 0.5rem;
-            margin-top: 1rem;
-        }
-
-        .success {
-            background-color: #dcfce7;
-            color: #166534;
-            border: 1px solid #86efac;
-        }
-
-        .error {
-            background-color: #fee2e2;
-            color: #991b1b;
-            border: 1px solid #fca5a5;
-        }
-
-        .warning {
-            background-color: #fef3c7;
-            color: #92400e;
-            border: 1px solid #fcd34d;
-            margin-top: 0.5rem;
-        }
-
-        #video-section {
-            margin-top: 2rem;
-        }
-
-        #video-preview {
-            margin-top: 1rem;
-            border-radius: 0.5rem;
-            overflow: hidden;
-        }
-
-        video {
-            width: 100%;
-            border-radius: 0.5rem;
-        }
-
-        @media (max-width: 640px) {
-            .container {
-                margin: 1rem auto;
-            }
-
-            .card {
-                padding: 1.5rem;
-            }
-
-            .language-buttons {
-                flex-direction: column;
-            }
-        }
-
-        /* أنماط الأيقونات والتأثيرات */
-        .process-status {
-            display: none;
-            text-align: center;
-            padding: 2rem;
-            margin: 2rem auto;
-            max-width: 800px;
-            background: #fff;
-            border-radius: 15px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            transition: all 0.3s ease;
-        }
-
-        .process-status i {
-            font-size: 3.5rem;
-            margin-bottom: 1.5rem;
-            display: block;
-        }
-
-        .process-status .typing-text {
-            font-size: 1.4rem;
-            margin-bottom: 1.5rem;
-            color: #2c3e50;
-            font-family: 'Tajawal', sans-serif;
-        }
-
-        /* تنسيق قسم النجاح */
-        #success-status i {
-            color: #28a745;
-            animation: pulse 2s infinite;
-        }
-
-        #success-status .typing-text {
-            color: #28a745;
-            font-weight: 600;
-        }
-
-        #create-video-btn {
-            background: linear-gradient(45deg, #2ecc71, #27ae60);
-            color: white;
-            border: none;
-            padding: 1rem 2rem;
-            font-size: 1.2rem;
-            border-radius: 30px;
-            cursor: pointer;
-            transition: transform 0.2s ease;
-            font-family: 'Tajawal', sans-serif;
-            margin-top: 1rem;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-
-        #create-video-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-        }
-
-        #create-video-btn i {
-            font-size: 1.2rem;
-            margin-left: 0.5rem;
-            margin-bottom: 0;
-            display: inline;
-        }
-
-        /* تنسيق قسم إنشاء الفيديو */
-        #video-creation-status i {
-            color: #3498db;
-            animation: spin 2s linear infinite;
-        }
-
-        #video-creation-status .typing-text {
-            color: #3498db;
-        }
-
-        /* تنسيق قسم عرض الفيديو */
-        #video-player-section {
-            padding: 2rem;
-        }
-
-        #video-player-section .success-message {
-            color: #28a745;
-            font-size: 1.8rem;
-            font-weight: 600;
-            margin-bottom: 2rem;
-            font-family: 'Tajawal', sans-serif;
-        }
-
-        .video-container {
-            width: 100%;
-            max-width: 800px;
-            margin: 2rem auto;
-            border-radius: 15px;
-            overflow: hidden;
-            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
-        }
-
-        #video-preview {
-            width: 100%;
-            height: auto;
-            display: block;
-            background: #000;
-        }
-
-        #download-video-btn {
-            background: linear-gradient(45deg, #3498db, #2980b9);
-            color: white;
-            border: none;
-            padding: 1rem 2rem;
-            font-size: 1.2rem;
-            border-radius: 30px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-family: 'Tajawal', sans-serif;
-            margin-top: 2rem;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-
-        #download-video-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-        }
-
-        #download-video-btn i {
-            font-size: 1.2rem;
-            margin-left: 0.5rem;
-        }
-
-        /* الرسوم المتحركة */
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.1); }
-            100% { transform: scale(1); }
-        }
-
-        @keyframes spin {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
-        }
-
-        /* تحسينات عامة */
-        .action-button {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
-            font-weight: 600;
-            letter-spacing: 0.5px;
-        }
-
-        .action-button:disabled {
-            opacity: 0.7;
-            cursor: not-allowed;
-        }
-
-        .typing-container {
-            text-align: center;
-            margin: 0.5rem 0;
-            height: 2rem;
-        }
-
-        .typing-text {
-            display: inline-block;
-            overflow: hidden;
-            border-left: 3px solid var(--primary-color);
-            white-space: nowrap;
-            margin: 0 auto;
-            padding-right: 0.5rem;
-            font-size: 1.2rem;
-            animation: 
-                typing 2s steps(30, end),
-                blink 0.75s step-end infinite;
-        }
-
-        @keyframes typing {
-            from { width: 0 }
-            to { width: 100% }
-        }
-
-        @keyframes blink {
-            50% { border-color: transparent }
-        }
-
-        .fade {
-            transition: all 0.3s ease-in-out;
-        }
-
-        .fade-out {
-            opacity: 0;
-            transform: translateY(10px);
-        }
-
-        .fade-in {
-            opacity: 1;
-            transform: translateY(0);
-        }
+        body { font-family: Arial, sans-serif; margin: 40px; }
+        h1 { text-align: center; }
+        .container { max-width: 600px; margin: 0 auto; }
+        label { display: block; margin: 10px 0 5px; }
+        textarea, input[type="text"] { width: 100%; padding: 10px; font-size: 16px; margin-bottom: 10px; }
+        button { padding: 10px 20px; background-color: #4CAF50; color: white; border: none; cursor: pointer; width: 100%; }
+        button:hover { background-color: #45a049; }
+        .output { margin-top: 20px; }
+        .audio-player { width: 100%; margin-top: 10px; }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="card">
-            <h1>إنشاء فيديو</h1>
-            
-            <form id="generate-form">
-                <div class="form-group">
-                    <label for="topic">الموضوع:</label>
-                    <input type="text" id="topic" name="topic" required>
-                </div>
-                <div class="form-group">
-                    <label for="keyword">الكلمة المفتاحية للصور:</label>
-                    <input type="text" id="keyword" name="keyword" required>
-                    <small style="color: var(--secondary-color);">الكلمة المفتاحية تستخدم للبحث عن الصور المناسبة</small>
-                </div>
-                <div class="form-group">
-                    <label>اللغة:</label>
-                    <div class="language-buttons">
-                        <button type="button" class="language-btn active" data-lang="ar">العربية</button>
-                        <button type="button" class="language-btn" data-lang="en">English</button>
-                        <button type="button" class="language-btn" data-lang="fr">Français</button>
-                    </div>
-                    <input type="hidden" id="language" name="language" value="ar">
-                </div>
-                <button type="submit" id="generate-btn" class="btn">إنشاء المحتوى</button>
-            </form>
+        <h1>Generate Text and Speech from Topic</h1>
+        <p>Enter a topic and generate a script. The script will then be converted into speech.</p>
+        
+        <form id="topic-form">
+            <label for="topic">Enter Topic</label>
+            <input type="text" id="topic" name="topic" placeholder="Enter a topic..." required>
+            <button type="submit">Generate Text and Speech</button>
+        </form>
 
-            <!-- حالات المعالجة -->
-            <div id="script-status" class="process-status">
-                <i class="fas fa-file-alt status-icon"></i>
-                <div class="typing-container">
-                    <span class="typing-text">جاري كتابة السكربت...</span>
-                </div>
-            </div>
-
-            <div id="images-status" class="process-status">
-                <i class="fas fa-images status-icon"></i>
-                <div class="typing-container">
-                    <span class="typing-text">جاري تحميل الصور...</span>
-                </div>
-            </div>
-
-            <div id="audio-status" class="process-status">
-                <i class="fas fa-microphone status-icon"></i>
-                <div class="typing-container">
-                    <span class="typing-text">جاري إنشاء الصوت...</span>
-                </div>
-            </div>
-
-            <!-- قسم نجاح المعالجة -->
-            <div id="success-status" class="process-status" style="display: none;">
-                <i class="fas fa-check-circle success-icon"></i>
-                <div class="typing-text">تهانينا! تم إنشاء السكربت والصور والصوت</div>
-                <button id="create-video-btn" class="action-button">
-                    <i class="fas fa-video"></i>
-                    إنشاء الفيديو
-                </button>
-            </div>
-
-            <!-- قسم إنشاء الفيديو -->
-            <div id="video-creation-status" class="process-status" style="display: none;">
-                <i class="fas fa-film"></i>
-                <div class="typing-text">لحظة من فضلك... جار إنشاء الفيديو</div>
-            </div>
-
-            <!-- قسم عرض الفيديو -->
-            <div id="video-player-section" class="process-status" style="display: none;">
-                <div class="success-message">تهانينا! تم إنشاء الفيديو</div>
-                <div class="video-container">
-                    <video id="video-preview" controls>
-                        <source src="" type="video/mp4">
-                        متصفحك لا يدعم تشغيل الفيديو.
-                    </video>
-                </div>
-                <button id="download-video-btn" class="action-button">
-                    <i class="fas fa-download"></i>
-                    تحميل الفيديو
-                </button>
-            </div>
-            
-            <div id="message"></div>
+        <div class="output">
+            <h2>Generated Audio:</h2>
+            <audio id="audio-player" class="audio-player" controls></audio>
+            <p id="warning-message" style="color: red;"></p>
         </div>
     </div>
 
     <script>
-        // تحديث وظيفة عرض الرسائل
-        function showMessage(message, type, warning = null) {
-            const messageDiv = document.getElementById('message');
-            messageDiv.innerHTML = '';
-            
-            const messageElement = document.createElement('div');
-            messageElement.className = `message ${type}`;
-            messageElement.textContent = message;
-            messageDiv.appendChild(messageElement);
-            
-            if (warning) {
-                const warningDiv = document.createElement('div');
-                warningDiv.className = 'warning';
-                warningDiv.textContent = {
-                    'image_issues': 'ملاحظة: كان هناك بعض المشاكل في تحميل الصور، لكن يمكنك المواصلة في إنشاء الفيديو.'
-                }[warning] || warning;
-                messageDiv.appendChild(warningDiv);
-            }
-        }
-
-        // إضافة وظائف أزرار اللغة
-        const languageButtons = document.querySelectorAll('.language-btn');
-        const languageInput = document.getElementById('language');
-
-        languageButtons.forEach(button => {
-            button.addEventListener('click', () => {
-                languageButtons.forEach(btn => btn.classList.remove('active'));
-                button.classList.add('active');
-                languageInput.value = button.dataset.lang;
-            });
-        });
-
-        // تحديث معالجة النموذج مع التزامن مع العمليات الفعلية
-        document.getElementById('generate-form').addEventListener('submit', async function(e) {
+        document.getElementById("topic-form").addEventListener("submit", async function (e) {
             e.preventDefault();
-            
-            const form = this;
-            const generateBtn = document.getElementById('generate-btn');
-            const successStatus = document.getElementById('success-status');
-            const videoCreationStatus = document.getElementById('video-creation-status');
-            const videoPlayerSection = document.getElementById('video-player-section');
-            
-            // تعطيل الزر أثناء المعالجة
-            generateBtn.disabled = true;
-            generateBtn.textContent = 'جاري المعالجة...';
-            
-            // إخفاء النموذج بتأثير تلاشي
-            form.classList.add('fade-out');
-            setTimeout(() => {
-                form.style.display = 'none';
-                showProcessStep('script-status');
-            }, 500);
+            const topic = document.getElementById("topic").value;
+            const warningMessage = document.getElementById("warning-message");
 
-            const formData = new FormData(this);
-            
+            if (!topic.trim()) {
+                warningMessage.textContent = "Topic cannot be empty.";
+                return;
+            }
+
+            warningMessage.textContent = "";  // Clear previous warnings
+
             try {
-                const response = await fetch('/generate', {
-                    method: 'POST',
-                    body: formData
+                // Make an AJAX request to Flask backend
+                const response = await fetch("/generate", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ topic: topic })
                 });
-                
-                if (!response.ok) {
-                    throw new Error(`خطأ في الخادم: ${response.status} ${response.statusText}`);
+
+                const data = await response.json();
+
+                if (data.warning) {
+                    warningMessage.textContent = data.warning;
+                    return;
                 }
 
-                if (!response.body) {
-                    throw new Error('لا يمكن قراءة البيانات من الخادم');
-                }
-
-                const reader = response.body.getReader();
-                let receivedData = '';
-
-                while (true) {
-                    const { done, value } = await reader.read();
-                    
-                    if (done) break;
-
-                    const chunk = new TextDecoder().decode(value);
-                    console.log('Received chunk:', chunk);
-                    receivedData += chunk;
-                    
-                    if (chunk.includes('Starting image downloads...')) {
-                        hideProcessStep('script-status');
-                        showProcessStep('images-status');
-                    }
-                    else if (chunk.includes('Image download process completed')) {
-                        hideProcessStep('images-status');
-                        showProcessStep('audio-status');
-                    }
-                    else if (chunk.includes('Voice generation completed')) {
-                        hideProcessStep('audio-status');
-                        showProcessStep('success-status');
-                    }
-                }
-
+                // Set the audio source for playback
+                const audioPlayer = document.getElementById("audio-player");
+                audioPlayer.src = data.audio_url;
+                audioPlayer.style.display = "block";  // Show audio player
             } catch (error) {
-                console.error('Error:', error);
-                showMessage(error.message || 'حدث خطأ أثناء معالجة الطلب', 'error');
-                generateBtn.disabled = false;
-                generateBtn.textContent = 'إنشاء الفيديو';
-                form.classList.remove('fade-out');
-                form.style.display = 'block';
-                hideAllProcessSteps();
+                warningMessage.textContent = "An error occurred. Please try again.";
             }
         });
-
-        // معالجة زر إنشاء الفيديو
-        document.getElementById('create-video-btn').addEventListener('click', async function() {
-            const successStatus = document.getElementById('success-status');
-            const videoCreationStatus = document.getElementById('video-creation-status');
-            const videoPlayerSection = document.getElementById('video-player-section');
-            
-            // إخفاء قسم النجاح وإظهار حالة إنشاء الفيديو
-            successStatus.style.display = 'none';
-            videoCreationStatus.style.display = 'block';
-            
-            try {
-                const response = await fetch('/create_video', {
-                    method: 'POST'
-                });
-                
-                if (!response.ok) {
-                    throw new Error('فشل في إنشاء الفيديو');
-                }
-                
-                // إخفاء حالة الإنشاء وإظهار مشغل الفيديو
-                videoCreationStatus.style.display = 'none';
-                videoPlayerSection.style.display = 'block';
-                
-                // تحديث مصدر الفيديو
-                const videoPreview = document.getElementById('video-preview');
-                videoPreview.src = '/video?' + new Date().getTime(); // إضافة timestamp لتجنب التخزين المؤقت
-                
-            } catch (error) {
-                console.error('Error:', error);
-                showMessage('حدث خطأ أثناء إنشاء الفيديو', 'error');
-                successStatus.style.display = 'block';
-                videoCreationStatus.style.display = 'none';
-            }
-        });
-
-        // معالجة زر تحميل الفيديو
-        document.getElementById('download-video-btn').addEventListener('click', function() {
-            window.location.href = '/video?download=true';
-        });
-
-        // وظائف مساعدة للتحكم في عرض المراحل
-        function showProcessStep(stepId) {
-            const step = document.getElementById(stepId);
-            step.style.display = 'block';
-            step.classList.remove('fade-out');
-            step.classList.add('fade-in');
-        }
-
-        function hideProcessStep(stepId) {
-            const step = document.getElementById(stepId);
-            step.classList.remove('fade-in');
-            step.classList.add('fade-out');
-            setTimeout(() => {
-                step.style.display = 'none';
-            }, 300);
-        }
-
-        function resetForm() {
-            const form = document.getElementById('generate-form');
-            form.style.display = 'block';
-            form.classList.remove('fade-out');
-            form.classList.add('fade-in');
-            hideAllProcessSteps();
-        }
-
-        function hideAllProcessSteps() {
-            const steps = ['script-status', 'images-status', 'audio-status', 'success-status', 'video-creation-status', 'video-player-section'];
-            steps.forEach(step => hideProcessStep(step));
-        }
     </script>
 </body>
 </html>
